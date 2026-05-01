@@ -45,6 +45,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -357,12 +358,13 @@ func (r *Reconciler) handleMachineDeploymentCleanup(ctx context.Context, md *clu
 	}
 
 	// Remove finalizer
-	kuberneteshelper.RemoveFinalizer(md, MachineDeploymentCleanupFinalizer)
-
-	// Update instance
-	err := r.workerClient.Update(ctx, md)
-	if err != nil {
-		return reconcile.Result{}, fmt.Errorf("failed to remove finalizer: %w", err)
+	if controllerutil.RemoveFinalizer(md, MachineDeploymentCleanupFinalizer) {
+		// update the machinedeployment only if the finalizer was actually removed.
+		// RemoveFinalizer returns false if there was nothing to remove, in which case we skip the update.
+		err := r.workerClient.Update(ctx, md)
+		if err != nil {
+			return reconcile.Result{}, fmt.Errorf("failed to remove finalizer: %w", err)
+		}
 	}
 
 	return reconcile.Result{}, nil
