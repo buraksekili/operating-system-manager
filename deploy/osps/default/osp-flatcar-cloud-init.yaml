@@ -126,9 +126,11 @@ spec:
         CRI_TOOLS_RELEASE="v1.35.0"
         {{- else if semverCompare "~1.36.0" .KubeVersion }}
         CRI_TOOLS_RELEASE="v1.36.0"
+        {{- else if semverCompare "~1.37.0" .KubeVersion }}
+        CRI_TOOLS_RELEASE="v1.37.0"
         {{- else }}
         {{- /* Fallback to the latest version */}}
-        CRI_TOOLS_RELEASE="v1.36.0"
+        CRI_TOOLS_RELEASE="v1.37.0"
         {{- end }}
 
         CRI_TOOLS_RELEASE="${CRI_TOOLS_RELEASE:-v1.29.0}"
